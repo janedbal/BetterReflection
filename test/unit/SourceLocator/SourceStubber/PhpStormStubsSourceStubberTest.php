@@ -492,7 +492,7 @@ class PhpStormStubsSourceStubberTest extends TestCase
  */
 \define('FILTER_SANITIZE_STRING', 513);
 EOT;
-        $stubData    = new StubData($exampleStub, 'filter');
+        $stubData    = new StubData($exampleStub, 'filter', null);
 
         self::assertStringMatchesFormat(
             "%Adefine('FILTER_SANITIZE_STRING',%w%d);",
