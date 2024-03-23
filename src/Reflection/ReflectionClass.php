@@ -374,31 +374,33 @@ class ReflectionClass implements Reflection
         $methodHash      = $this->methodHash($method->getImplementingClass()->getName(), $method->getName());
 
         if (array_key_exists($methodHash, $this->traitsData['modifiers'])) {
-            $methodModifiersWithoutVisibility = $methodModifiers;
-            if (($methodModifiers & CoreReflectionMethod::IS_PUBLIC) === CoreReflectionMethod::IS_PUBLIC) {
-                $methodModifiersWithoutVisibility -= CoreReflectionMethod::IS_PUBLIC;
-            }
-            if (($methodModifiers & CoreReflectionMethod::IS_PROTECTED) === CoreReflectionMethod::IS_PROTECTED) {
-                $methodModifiersWithoutVisibility -= CoreReflectionMethod::IS_PROTECTED;
-            }
-            if (($methodModifiers & CoreReflectionMethod::IS_PRIVATE) === CoreReflectionMethod::IS_PRIVATE) {
-                $methodModifiersWithoutVisibility -= CoreReflectionMethod::IS_PRIVATE;
-            }
             $newModifierAst = $this->traitsData['modifiers'][$methodHash];
-            $newModifier = 0;
-            if (($newModifierAst & ClassNode::MODIFIER_PUBLIC) === ClassNode::MODIFIER_PUBLIC) {
-                $newModifier = CoreReflectionMethod::IS_PUBLIC;
-            }
-            if (($newModifierAst & ClassNode::MODIFIER_PROTECTED) === ClassNode::MODIFIER_PROTECTED) {
-                $newModifier = CoreReflectionMethod::IS_PROTECTED;
-            }
-            if (($newModifierAst & ClassNode::MODIFIER_PRIVATE) === ClassNode::MODIFIER_PRIVATE) {
-                $newModifier = CoreReflectionMethod::IS_PRIVATE;
+            if ($this->traitsData['modifiers'][$methodHash] & ClassNode::VISIBILITY_MODIFIER_MASK) {
+                $methodModifiersWithoutVisibility = $methodModifiers;
+                if (($methodModifiers & CoreReflectionMethod::IS_PUBLIC) === CoreReflectionMethod::IS_PUBLIC) {
+                    $methodModifiersWithoutVisibility -= CoreReflectionMethod::IS_PUBLIC;
+                }
+                if (($methodModifiers & CoreReflectionMethod::IS_PROTECTED) === CoreReflectionMethod::IS_PROTECTED) {
+                    $methodModifiersWithoutVisibility -= CoreReflectionMethod::IS_PROTECTED;
+                }
+                if (($methodModifiers & CoreReflectionMethod::IS_PRIVATE) === CoreReflectionMethod::IS_PRIVATE) {
+                    $methodModifiersWithoutVisibility -= CoreReflectionMethod::IS_PRIVATE;
+                }
+                $newModifier = 0;
+                if (($newModifierAst & ClassNode::MODIFIER_PUBLIC) === ClassNode::MODIFIER_PUBLIC) {
+                    $newModifier = CoreReflectionMethod::IS_PUBLIC;
+                }
+                if (($newModifierAst & ClassNode::MODIFIER_PROTECTED) === ClassNode::MODIFIER_PROTECTED) {
+                    $newModifier = CoreReflectionMethod::IS_PROTECTED;
+                }
+                if (($newModifierAst & ClassNode::MODIFIER_PRIVATE) === ClassNode::MODIFIER_PRIVATE) {
+                    $newModifier = CoreReflectionMethod::IS_PRIVATE;
+                }
+                $methodModifiers = $methodModifiersWithoutVisibility | $newModifier;
             }
             if (($newModifierAst & ClassNode::MODIFIER_FINAL) === ClassNode::MODIFIER_FINAL) {
-                $newModifier = CoreReflectionMethod::IS_FINAL;
+                $methodModifiers |= CoreReflectionMethod::IS_FINAL;
             }
-            $methodModifiers = $methodModifiersWithoutVisibility | $newModifier;
         }
 
         $createMethod = function (string|null $aliasMethodName) use ($method, $methodModifiers): ReflectionMethod {
