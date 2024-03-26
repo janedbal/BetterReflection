@@ -1131,7 +1131,11 @@ class ReflectionClass implements Reflection
             throw CircularReference::fromClassName($parentClassName);
         }
 
-        return $this->reflector->reflectClass($parentClassName);
+        try {
+            return $this->reflector->reflectClass($parentClassName);
+        } catch (IdentifierNotFound) {
+            return null;
+        }
     }
 
     /**
