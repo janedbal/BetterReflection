@@ -1122,13 +1122,16 @@ class ReflectionClass implements Reflection
      */
     public function getParentClass(): ReflectionClass|null
     {
-        $parentClass = $this->getParentClasses()[0] ?? null;
-
-        if ($parentClass === null) {
+        $parentClassName = $this->getParentClassName();
+        if ($parentClassName === null) {
             return null;
         }
 
-        return $parentClass;
+        if ($this->name === $parentClassName) {
+            throw CircularReference::fromClassName($parentClassName);
+        }
+
+        return $this->reflector->reflectClass($parentClassName);
     }
 
     /**
