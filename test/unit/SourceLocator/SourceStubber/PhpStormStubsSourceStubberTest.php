@@ -62,6 +62,8 @@ use function get_defined_constants;
 use function get_defined_functions;
 use function in_array;
 use function sort;
+use function spl_autoload_register;
+use function spl_autoload_unregister;
 use function sprintf;
 
 use const PHP_VERSION_ID;
@@ -98,6 +100,8 @@ class PhpStormStubsSourceStubberTest extends TestCase
     {
         parent::setUp();
 
+        spl_autoload_register([$this, 'failAutoload']);
+
         $betterReflection = BetterReflectionSingleton::instance();
 
         $this->phpParser                = $betterReflection->phpParser();
@@ -106,6 +110,18 @@ class PhpStormStubsSourceStubberTest extends TestCase
         $this->sourceStubber            = new PhpStormStubsSourceStubber($this->phpParser, $this->prettyPrinter, PHP_VERSION_ID);
         $this->phpInternalSourceLocator = new PhpInternalSourceLocator($this->astLocator, $this->sourceStubber);
         $this->reflector                = new DefaultReflector($this->phpInternalSourceLocator);
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        spl_autoload_unregister([$this, 'failAutoload']);
+    }
+
+    public function failAutoload(string $className): void
+    {
+        self::fail('Parsing PHPStorm stubs should never trigger autoloading - tried loading ' . $className);
     }
 
     /** @return list<array{0: string}> */
